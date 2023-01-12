@@ -53,7 +53,12 @@ if __name__ == "__main__":
         state_setter=DefaultState(),
         obs_builder=ExpandAdvancedObs(),
         action_parser=LookupAction(),
-        terminal_conditions=[TimeoutCondition(round(2000)), GoalScoredCondition()],
+        terminal_conditions=[TimeoutCondition(round(4096)), GoalScoredCondition()], 
+        # mode | gpm  | 95% | 99%
+        # -----|------|-----|-----
+        # 1v1  | 1.69 | 1.8 | 2.8
+        # 2v2  | 1.07 | 2.8 | 4.3
+        # 3v3  | 0.83 | 3.6 | 5.6
         reward_function=CombinedRewardNormalized(
             (
                 EventReward(

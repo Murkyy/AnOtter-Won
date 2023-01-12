@@ -43,10 +43,10 @@ if __name__ == "__main__":
 
     # ROCKET-LEARN USES WANDB WHICH REQUIRES A LOGIN TO USE. YOU CAN SET AN ENVIRONMENTAL VARIABLE
     # OR HARDCODE IT IF YOU ARE NOT SHARING YOUR SOURCE FILES
-    name_and_version = "NoMad_V06"
+    name_and_version = "NoMad_V07"
     wandb.login(key=os.environ["wandb_key"])
     logger = wandb.init(project="nomad", entity="murky")
-    logger.name = "LEARNER_NOMAD_V06"
+    logger.name = "LEARNER_NOMAD_V07"
 
     # LINK TO THE REDIS SERVER YOU SHOULD HAVE RUNNING (USE THE SAME PASSWORD YOU SET IN THE REDIS
     # CONFIG)
@@ -87,7 +87,7 @@ if __name__ == "__main__":
                                         logger=logger,
                                         save_every=100,
                                         model_every=100,
-                                        clear=False)
+                                        clear=True)
 
     # ROCKET-LEARN EXPECTS A SET OF DISTRIBUTIONS FOR EACH ACTION FROM THE NETWORK, NOT
     # THE ACTIONS THEMSELVES. SEE network_setup.readme.txt FOR MORE INFORMATION
@@ -142,7 +142,7 @@ if __name__ == "__main__":
         ent_coef=0.01,
         n_steps=400_000,
         batch_size=400_000,
-        minibatch_size=200_000,
+        minibatch_size=100_000,
         epochs=30,
         gamma=gamma,
         clip_range=0.2,
@@ -181,7 +181,7 @@ if __name__ == "__main__":
 
     # LOAD A CHECKPOINT THAT WAS PREVIOUSLY SAVED AND CONTINUE TRAINING. OPTIONAL PARAMETER ALLOWS YOU
     # TO RESTART THE STEP COUNT INSTEAD OF CONTINUING
-    alg.load(f"out/models/{name_and_version}/nomad_latest/nomad_-1/checkpoint.pt")
+    # alg.load(f"out/models/{name_and_version}/nomad_latest/nomad_-1/checkpoint.pt")
 
     # BEGIN TRAINING. IT WILL CONTINUE UNTIL MANUALLY STOPPED
     # -iterations_per_save SPECIFIES HOW OFTEN CHECKPOINTS ARE SAVED
