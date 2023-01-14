@@ -127,3 +127,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+NoMadRocketLearn/redis-model-cache-Shamrock_PC_model_database.db
+NoMadRocketLearn/run_worker.ps1
+NoMadRocketLearn/run_worker.bat
