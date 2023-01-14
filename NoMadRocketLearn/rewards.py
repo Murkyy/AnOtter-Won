@@ -104,14 +104,17 @@ class CombinedRewardNormalized(RewardFunction):
             func.get_reward(player, state, previous_action)
             for func in self.reward_functions
         ]
-        # if player.car_id == 1:
-        # if ((self.reward_weights * np.array(rewards) / sum(self.reward_weights)) != [0., 0., 0., 0.]).any():
-        #     print(
-        #         "player",
-        #         player.car_id,
-        #         "combined_normed",
-        #         self.reward_weights * np.array(rewards) / sum(self.reward_weights),
-        #     )
+        # if player.car_id == 1 or player.car_id == 2 :
+        #     if ((self.reward_weights * np.array(rewards) / sum(self.reward_weights)) != [0., 0., 0.]).any():
+        #         print(
+        #             "player",
+        #             player.car_id,
+        #             "combined_normed",
+        #             self.reward_weights * np.array(rewards) / sum(self.reward_weights),
+        #             "total",
+        #             float(np.dot(self.reward_weights, rewards) / sum(self.reward_weights)),
+        #         )
+        
         return float(np.dot(self.reward_weights, rewards) / sum(self.reward_weights))
 
     def get_final_reward(
@@ -282,6 +285,7 @@ class KickoffReward(RewardFunction):
         self.closest_reset_blue, self.closest_reset_orange = _closest_to_ball(
             initial_state
         )
+        self.kickoff_timer = 0
 
     def pre_step(self, state: GameState):
         self.kickoff_timer += 1
@@ -304,8 +308,6 @@ class KickoffReward(RewardFunction):
                 self.vel_dir_reward.get_reward(player, state, previous_action)
                 * self.kickoff_weight
             )
-        # print("player", player.car_id, "KickoffReward", reward)
-
         return reward
 
 
@@ -327,23 +329,43 @@ class TouchGrassReward(RewardFunction):
         return reward
 
 
-class TouchBallReward(RewardFunction):
-    def __init__(self, touch_ball_w: float = 0.01) -> None:
+class PossessionReward(RewardFunction):
+    def __init__(self, possession_w: float = 1.0) -> None:
         super().__init__()
-        self.touch_ball_w = touch_ball_w
-        self.rewards_list: List(float) = [0] * 2
+        self.possession_w = possession_w
+        self.rewards_list: Tuple(float) = [0.] * 2
+        self.possession: Tuple(bool) = [False] * 2
+        self.last_possession: Tuple(bool) = [False] * 2
+        self.possession_changed: bool = False
 
-    
     def reset(self, initial_state: GameState):
+        self.last_possession = [False] * 2
         pass
 
     def pre_step(self, state: GameState):
-        self.rewards_list = [0] * 2
+        self.rewards_list = [0.] * 2
+        self.possession = [False] * 2
+        self.possession_changed = False
+
         for player in state.players:
             if player.ball_touched:
-                self.rewards_list[player.team_num] += self.touch_ball_w
+                self.rewards_list[player.team_num] += self.possession_w
+                # print(f"player{player.car_id} touched the ball, reward list is {self.rewards_list}")
+            if state.last_touch == player.car_id:
+                self.possession[player.team_num] = True
+                self.possession_changed = self.possession != self.last_possession
+                # print(f"possession is {self.possession}, last possession is {self.last_possession}, possession_changed is {self.possession_changed}, " )
+                if self.last_possession == [False] * 2:
+                    # print(f"FIRST TOUCH, NO REWARD")
+                    self.possession_changed = False
+                self.last_possession = self.possession
+
 
     def get_reward(
         self, player: PlayerData, state: GameState, previous_action: np.ndarray
     ) -> float:
-        return self.rewards_list[1 - player.team_num]
+        if self.possession_changed:
+            # if self.rewards_list[1 - player.team_num] != 0.:
+                # print("REWARD :", -self.rewards_list[1 - player.team_num], "PLAYER :",player.car_id )
+            return -self.rewards_list[1 - player.team_num]
+        return 0.

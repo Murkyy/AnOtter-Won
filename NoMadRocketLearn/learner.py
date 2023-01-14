@@ -3,16 +3,17 @@ import wandb
 import numpy as np
 from typing import Any
 from prettytable import PrettyTable
+from functools import partial
 
 import torch.jit
-from torch.nn import Linear, Sequential, ReLU
+from torch.nn import Linear, Sequential, ReLU, Module, Conv2d, init
 
 from redis import Redis
 
 from rlgym.utils.obs_builders.advanced_obs import AdvancedObs
 from rlgym.utils.gamestates import PlayerData, GameState
 from rlgym.utils.reward_functions.default_reward import DefaultReward
-from rewards import EventReward, KickoffReward, CombinedRewardNormalized, TouchGrassReward, TouchBallReward
+from rewards import EventReward, KickoffReward, CombinedRewardNormalized, TouchGrassReward, PossessionReward
 from rlgym.utils.action_parsers.discrete_act import DiscreteAction
 from nomad_lookup_act import LookupAction
 
@@ -43,10 +44,10 @@ if __name__ == "__main__":
 
     # ROCKET-LEARN USES WANDB WHICH REQUIRES A LOGIN TO USE. YOU CAN SET AN ENVIRONMENTAL VARIABLE
     # OR HARDCODE IT IF YOU ARE NOT SHARING YOUR SOURCE FILES
-    name_and_version = "NoMad_V07"
+    name_and_version = "NoMad_Vtest"
     wandb.login(key=os.environ["wandb_key"])
     logger = wandb.init(project="nomad", entity="murky")
-    logger.name = "LEARNER_NOMAD_V07"
+    logger.name = "LEARNER_NOMAD_Vtest"
 
     # LINK TO THE REDIS SERVER YOU SHOULD HAVE RUNNING (USE THE SAME PASSWORD YOU SET IN THE REDIS
     # CONFIG)
@@ -66,12 +67,12 @@ if __name__ == "__main__":
                     save=0.3,
                     demo=0.1,
                     boost_pickup=0.05,
-                    touch=0.01
+                    touch=0.05
                 ),
                 KickoffReward(kickoff_w=1.0),
-                TouchBallReward(touch_ball_w=1.0)
+                PossessionReward(possession_w=1.0)
             ),
-            (1, 1, 1, 1),
+            (1, 1, 1),
         )
 
     def act():
@@ -99,25 +100,26 @@ if __name__ == "__main__":
     
     state_dim = 169 # 107 for 1s, 169 for 2s, 231 for 3s for Advanced Obs
 
+    hidden_dim = 256
 
     critic = Sequential(
-        Linear(state_dim, 512),
+        Linear(state_dim, hidden_dim),
         ReLU(),
-        Linear(512, 512),
+        Linear(hidden_dim, hidden_dim),
         ReLU(),
-        Linear(512, 512),
+        Linear(hidden_dim, hidden_dim),
         ReLU(),
-        Linear(512, 1)
+        Linear(hidden_dim, 1)
     )
 
     actor = DiscretePolicy(Sequential(
-        Linear(state_dim, 512),
+        Linear(state_dim, hidden_dim),
         ReLU(),
-        Linear(512, 512),
+        Linear(hidden_dim, hidden_dim),
         ReLU(),
-        Linear(512, 512),
+        Linear(hidden_dim, hidden_dim),
         ReLU(),
-        Linear(512, total_output),
+        Linear(hidden_dim, total_output),
         SplitLayer(splits=split)
     ), split)
 
@@ -127,8 +129,30 @@ if __name__ == "__main__":
         {"params": critic.parameters(), "lr": 5e-5}
     ])
 
+
+    def init_weights(module: Module, gain: float = 1) -> None:
+        """
+        Orthogonal initialization (used in PPO and A2C)
+        """
+
+        if isinstance(module, (Linear)):
+            if module.in_features == hidden_dim and module.out_features == 1:
+                gain = 1
+            if module.in_features == hidden_dim and module.out_features == hidden_dim:
+                gain = np.sqrt(2)
+            if module.in_features == hidden_dim and module.out_features == total_output:
+                gain = 0.01
+            init.orthogonal_(module.weight, gain=gain)
+            if module.bias is not None:
+                module.bias.data.fill_(0.0)
+
     # PPO REQUIRES AN ACTOR/CRITIC AGENT
     agent = ActorCriticAgent(actor=actor, critic=critic, optimizer=optim)
+    agent.apply(partial(init_weights)) # Orthogonal weights init as in Atari
+
+    # for name, parameter in agent.named_parameters():
+    #     print(name)
+    #     print(parameter.data)
 
     tick_skip=8
     fps = 120/tick_skip
@@ -142,7 +166,7 @@ if __name__ == "__main__":
         ent_coef=0.01,
         n_steps=400_000,
         batch_size=400_000,
-        minibatch_size=100_000,
+        minibatch_size=50_000,
         epochs=30,
         gamma=gamma,
         clip_range=0.2,
@@ -174,6 +198,7 @@ if __name__ == "__main__":
         print(f"Critic Params: {critic_params}")
         print(f"Total Trainable Params: {total_params}")
         return total_params
+
 
     print(count_parameters(actor))
     print(count_parameters(critic))
