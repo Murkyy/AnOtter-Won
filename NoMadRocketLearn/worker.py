@@ -10,7 +10,7 @@ from rlgym.utils.terminal_conditions.common_conditions import (
     GoalScoredCondition,
     TimeoutCondition,
 )
-from rewards import EventReward, KickoffReward, CombinedRewardNormalized, TouchGrassReward, TouchBallReward
+from rewards import EventReward, KickoffReward, CombinedRewardNormalized, TouchGrassReward, PossessionReward
 from rlgym.utils.state_setters.default_state import DefaultState
 from rlgym.utils.obs_builders.advanced_obs import AdvancedObs
 from rlgym.utils.action_parsers.discrete_act import DiscreteAction
@@ -47,7 +47,7 @@ if __name__ == "__main__":
     # BUILD THE ROCKET LEAGUE MATCH THAT WILL USED FOR TRAINING
     # -ENSURE OBSERVATION, REWARD, AND ACTION CHOICES ARE THE SAME IN THE WORKER
     match = Match(
-        game_speed=100,
+        game_speed=4,
         spawn_opponents=True,
         team_size=2,
         state_setter=DefaultState(),
@@ -68,10 +68,10 @@ if __name__ == "__main__":
                     save=0.3,
                     demo=0.1,
                     boost_pickup=0.05,
-                    touch=0.01
+                    touch=0.05
                 ),
                 KickoffReward(kickoff_w=1.0),
-                TouchBallReward(touch_ball_w=1.0)
+                PossessionReward(possession_w=1.0)
             ),
             (1, 1, 1),
         ),

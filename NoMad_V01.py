@@ -52,8 +52,8 @@ if __name__ == "__main__":  # Required for multiprocessing
     horizon = 1_000_000
     wait_time = 20
     device = "cuda"
-    savepath = "out/models/NoMad_V01/"
-    logpath = "out/logs/NoMad_V01/"
+    savepath = "out/models/NoMad_V02/"
+    logpath = "out/logs/NoMad_V02/"
     fps = 120 / frame_skip
     gamma = np.exp(np.log(0.5) / (fps * half_life_seconds))  # Quick mafs
     print(f"fps={fps}, gamma={gamma})")
