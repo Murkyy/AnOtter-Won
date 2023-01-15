@@ -351,13 +351,13 @@ class PossessionReward(RewardFunction):
             if player.ball_touched:
                 self.rewards_list[player.team_num] += self.possession_w
                 self.rewards_list[1 - player.team_num] -= self.possession_w
-                print(f"player{player.car_id} touched the ball, reward list is {self.rewards_list}")
+                # print(f"player{player.car_id} touched the ball, reward list is {self.rewards_list}")
             if state.last_touch == player.car_id:
                 self.possession[player.team_num] = True
                 self.possession_changed = self.possession != self.last_possession
-                print(f"possession is {self.possession}, last possession is {self.last_possession}, possession_changed is {self.possession_changed}, " )
+                # print(f"possession is {self.possession}, last possession is {self.last_possession}, possession_changed is {self.possession_changed}, " )
                 if self.last_possession == [False] * 2:
-                    print(f"FIRST TOUCH, NO REWARD")
+                    # print(f"FIRST TOUCH, NO REWARD")
                     self.possession_changed = False
                 self.last_possession = self.possession
 
@@ -366,6 +366,6 @@ class PossessionReward(RewardFunction):
     ) -> float:
         if self.possession_changed:
             # if self.rewards_list[1 - player.team_num] != 0.:
-            print("REWARD :", self.rewards_list[player.team_num], "PLAYER :",player.car_id )
+            # print("REWARD :", self.rewards_list[player.team_num], "PLAYER :",player.car_id )
             return self.rewards_list[player.team_num]
         return 0.0
