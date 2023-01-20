@@ -211,8 +211,8 @@ class EventReward(RewardFunction):
         reward = np.dot(self.weights, diff_values)
         # norm_reward = reward / (sum(self.weights))
         self.last_registered_values[player.car_id] = new_values
-        # if (player.car_id == 1):
-        #     print("Player ", player.car_id, "EventReward", reward, "EventRewardNormalized", norm_reward, self.weights )
+        # if (player.car_id == 1 and reward != 0.0):
+        #     print("Player ", player.car_id, "EventReward", reward, "EventRewardNormalized" )
         return reward
 
 

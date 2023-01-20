@@ -10,7 +10,7 @@ from torch.distributions import Categorical
 class Agent:
     def __init__(self):
         cur_dir = os.path.dirname(os.path.realpath(__file__))
-        with open(os.path.join(cur_dir, "checkpoint.pt"), 'rb') as f:
+        with open(os.path.join(cur_dir, "jit_policy.jit"), 'rb') as f:
             self.actor = torch.jit.load(f) 
         torch.set_num_threads(1)
         self.parser=LookupAction()

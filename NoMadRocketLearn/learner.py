@@ -4,9 +4,10 @@ import numpy as np
 from typing import Any
 from prettytable import PrettyTable
 from functools import partial
+import random
 
 import torch.jit
-from torch.nn import Linear, Sequential, ReLU, Module, Conv2d, init
+from torch.nn import Linear, Sequential, ReLU, Module, init
 
 from redis import Redis
 
@@ -21,11 +22,14 @@ from nomad_lookup_act import LookupAction
 
 from rocket_learn.agent.actor_critic_agent import ActorCriticAgent
 from rocket_learn.agent.discrete_policy import DiscretePolicy
-from rocket_learn.ppo import PPO
+# from rocket_learn.ppo import PPO
+from ppo import PPO
 from rocket_learn.rollout_generator.redis.redis_rollout_generator import RedisRolloutGenerator
 from rocket_learn.utils.util import SplitLayer
 
-
+torch.manual_seed(2)
+random.seed(2)
+np.random.seed(2)
 
 # ROCKET-LEARN ALWAYS EXPECTS A BATCH DIMENSION IN THE BUILT OBSERVATION
 class ExpandAdvancedObs(AdvancedObs):
@@ -44,10 +48,10 @@ if __name__ == "__main__":
 
     # ROCKET-LEARN USES WANDB WHICH REQUIRES A LOGIN TO USE. YOU CAN SET AN ENVIRONMENTAL VARIABLE
     # OR HARDCODE IT IF YOU ARE NOT SHARING YOUR SOURCE FILES
-    name_and_version = "NoMad_V1.0.0"
+    name_and_version = "NoMad_basicnorm"
     wandb.login(key=os.environ["wandb_key"])
     logger = wandb.init(project="nomad", entity="murky")
-    logger.name = "LEARNER_NOMAD_V1.0.0"
+    logger.name = "LEARNER_NOMAD_basicnorm"
 
     # LINK TO THE REDIS SERVER YOU SHOULD HAVE RUNNING (USE THE SAME PASSWORD YOU SET IN THE REDIS
     # CONFIG)
@@ -58,22 +62,31 @@ if __name__ == "__main__":
         return ExpandAdvancedObs()
 
     def rew():
-        return CombinedRewardNormalized(
-            (
-                EventReward(
-                    goal=1.0,
-                    concede=-1.0,
-                    shot=0.05,
-                    save=0.3,
-                    demo=0.1,
-                    boost_pickup=0.05,
-                    touch=0.05
-                ),
-                KickoffReward(kickoff_w=1.0),
-                PossessionReward(possession_w=1.0)
-            ),
-            (1, 1, 1),
-        )
+        return EventReward(
+                    goal=10.0,
+                    concede=-10.0,
+                    shot=0.5,
+                    save=3.0,
+                    demo=1.0,
+                    boost_pickup=0.01,
+                    touch=0.5
+                )
+        # return CombinedRewardNormalized(
+        #     (
+        #         EventReward(
+        #             goal=1.0,
+        #             concede=-1.0,
+        #             shot=0.05,
+        #             save=0.3,
+        #             demo=0.1,
+        #             boost_pickup=0.001,
+        #             touch=0.05
+        #         ),
+        #         KickoffReward(kickoff_w=1),
+        #         PossessionReward(possession_w=1)
+        #     ),
+        #     (2, 0.02, 0.02),
+        # )
 
     def act():
         return LookupAction()
@@ -166,12 +179,12 @@ if __name__ == "__main__":
         ent_coef=0.01,
         n_steps=400_000,
         batch_size=400_000,
-        minibatch_size=50_000,
-        epochs=30,
+        minibatch_size=100_000,
+        epochs=20,
         gamma=gamma,
         clip_range=0.2,
         gae_lambda=0.95,
-        vf_coef=0.75,
+        vf_coef=0.5,
         max_grad_norm=0.5,
         logger=logger,
         device="cuda",
@@ -206,7 +219,7 @@ if __name__ == "__main__":
 
     # LOAD A CHECKPOINT THAT WAS PREVIOUSLY SAVED AND CONTINUE TRAINING. OPTIONAL PARAMETER ALLOWS YOU
     # TO RESTART THE STEP COUNT INSTEAD OF CONTINUING
-    # alg.load(f"out/models/{name_and_version}/nomad_latest/nomad_-1/checkpoint.pt")
+    # alg.load(f"out/models/{name_and_version}/nomad_1673792054.2704778/nomad_100/checkpoint.pt")
 
     # BEGIN TRAINING. IT WILL CONTINUE UNTIL MANUALLY STOPPED
     # -iterations_per_save SPECIFIES HOW OFTEN CHECKPOINTS ARE SAVED

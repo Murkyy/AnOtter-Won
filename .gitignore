@@ -131,3 +131,5 @@ NoMadRocketLearn/redis-model-cache-Shamrock_PC_model_database.db
 NoMadRocketLearn/run_worker.ps1
 NoMadRocketLearn/run_worker.bat
 NoMadRocketLearn/run_worker.bat - Shortcut.lnk
+NoMadRLBotSB3Interface/exit_save.zip
+NoMadRocketLearnRLBotInterface/jit_policy.jit

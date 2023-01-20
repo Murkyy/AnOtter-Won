@@ -50,5 +50,6 @@ class LookupAction(ActionParser):
         return Discrete(len(self._lookup_table))
 
     def parse_actions(self, actions: Any, state: GameState) -> np.ndarray:
-        return self._lookup_table[actions.astype(int)][:,0]
+        return self._lookup_table[actions.astype(int)][:,0] # train
         # return self._lookup_table[np.asarray(actions)][:,0]
+        # return self._lookup_table[actions.numpy().item()]

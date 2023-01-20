@@ -47,7 +47,7 @@ if __name__ == "__main__":
     # BUILD THE ROCKET LEAGUE MATCH THAT WILL USED FOR TRAINING
     # -ENSURE OBSERVATION, REWARD, AND ACTION CHOICES ARE THE SAME IN THE WORKER
     match = Match(
-        game_speed=4,
+        game_speed=100,
         spawn_opponents=True,
         team_size=2,
         state_setter=DefaultState(),
@@ -59,22 +59,33 @@ if __name__ == "__main__":
         # 1v1  | 1.69 | 1.8 | 2.8
         # 2v2  | 1.07 | 2.8 | 4.3
         # 3v3  | 0.83 | 3.6 | 5.6
-        reward_function=CombinedRewardNormalized(
-            (
-                EventReward(
-                    goal=1.0,
-                    concede=-1.0,
-                    shot=0.05,
-                    save=0.3,
-                    demo=0.1,
-                    boost_pickup=0.05,
-                    touch=0.05
-                ),
-                KickoffReward(kickoff_w=1.0),
-                PossessionReward(possession_w=1.0)
-            ),
-            (1, 1, 1),
-        ),
+
+        reward_function = EventReward(
+                    goal=10.0,
+                    concede=-10.0,
+                    shot=0.5,
+                    save=3.0,
+                    demo=1.0,
+                    boost_pickup=0.01,
+                    touch=0.5
+                )
+
+        # reward_function=CombinedRewardNormalized(
+        #     (
+        #         EventReward(
+        #             goal=1.0,
+        #             concede=-1.0,
+        #             shot=0.05,
+        #             save=0.3,
+        #             demo=0.1,
+        #             boost_pickup=0.001,
+        #             touch=0.05
+        #         ),
+        #         KickoffReward(kickoff_w=1),
+        #         PossessionReward(possession_w=1)
+        #     ),
+        #     (2, 0.02, 0.02),
+        # ),
     )
 
     # LINK TO THE REDIS SERVER YOU SHOULD HAVE RUNNING (USE THE SAME PASSWORD YOU SET IN THE REDIS
