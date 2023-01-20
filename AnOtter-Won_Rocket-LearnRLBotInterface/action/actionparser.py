@@ -49,5 +49,8 @@ class LookupAction(ActionParser):
     def get_action_space(self) -> gym.spaces.Space:
         return Discrete(len(self._lookup_table))
 
-    def parse_actions(self, actions: Any, state: GameState) -> np.ndarray:
-        return self._lookup_table[actions]
+    def parse_actions(self, actions: Any) -> np.ndarray:
+        return self._lookup_table[actions]    
+        # return self._lookup_table[actions.item()]
+        
+        # return self._lookup_table[]

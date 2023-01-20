@@ -133,3 +133,5 @@ NoMadRocketLearn/run_worker.bat
 NoMadRocketLearn/run_worker.bat - Shortcut.lnk
 NoMadRLBotSB3Interface/exit_save.zip
 NoMadRocketLearnRLBotInterface/jit_policy.jit
+AnOtter-Won_Rocket-LearnRLBotInterface/jit.pt
+AnOtter-Won_Rocket-LearnRLBotInterface/tools/checkpoint.pt

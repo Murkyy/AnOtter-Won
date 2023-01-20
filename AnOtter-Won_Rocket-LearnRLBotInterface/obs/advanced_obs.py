@@ -5,6 +5,7 @@ from rlgym_compat import common_values
 from rlgym_compat import PlayerData, GameState, PhysicsObject
 
 
+
 class AdvancedObs:
     POS_STD = 2300
     ANG_STD = math.pi
@@ -81,3 +82,8 @@ class AdvancedObs:
              int(player.is_demoed)]])
 
         return player_car
+
+class ExpandAdvancedObs(AdvancedObs):
+    def build_obs(self, player: PlayerData, state: GameState, previous_action: np.ndarray) -> Any:
+        obs = super(ExpandAdvancedObs, self).build_obs(player, state, previous_action)
+        return np.expand_dims(obs, 0)
