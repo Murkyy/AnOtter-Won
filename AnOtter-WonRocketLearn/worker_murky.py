@@ -10,7 +10,13 @@ from rlgym.utils.terminal_conditions.common_conditions import (
     GoalScoredCondition,
     TimeoutCondition,
 )
-from rewards import EventReward, KickoffReward, CombinedRewardNormalized, TouchGrassReward, PossessionReward
+from rewards import (
+    EventReward,
+    KickoffReward,
+    CombinedRewardNormalized,
+    TouchGrassReward,
+    PossessionReward,
+)
 from rlgym.utils.state_setters.default_state import DefaultState
 from rlgym.utils.obs_builders.advanced_obs import AdvancedObs
 from rlgym.utils.action_parsers.discrete_act import DiscreteAction
@@ -53,18 +59,17 @@ if __name__ == "__main__":
         state_setter=DefaultState(),
         obs_builder=ExpandAdvancedObs(),
         action_parser=LookupAction(),
-        terminal_conditions=[TimeoutCondition(round(4096)), GoalScoredCondition()], 
+        terminal_conditions=[TimeoutCondition(round(4096)), GoalScoredCondition()],
         # mode | gpm  | 95% | 99%
         # -----|------|-----|-----
         # 1v1  | 1.69 | 1.8 | 2.8
         # 2v2  | 1.07 | 2.8 | 4.3
         # 3v3  | 0.83 | 3.6 | 5.6
-
-        reward_function = EventReward(
-                    team_goal=1.0,
-                    concede=-1.0,
-                )
-
+        reward_function=EventReward(
+            goal=1.0,
+            team_goal=1.0,
+            concede=-1.0,
+        )
         # reward_function=CombinedRewardNormalized(
         #     (
         #         EventReward(

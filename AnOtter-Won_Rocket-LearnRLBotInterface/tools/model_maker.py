@@ -36,6 +36,6 @@ cur_dir = os.path.dirname(os.path.realpath(__file__))
 checkpoint = torch.load(os.path.join(cur_dir, "checkpoint.pt"))
 actor.load_state_dict(checkpoint['actor_state_dict'])
 actor.eval()
-torch.jit.save(torch.jit.script(actor), 'jit.pt')
+torch.jit.save(torch.jit.script(actor), './AnOtter-Won/AnOtter-Won_Rocket-LearnRLBotInterface/jit.pt')
 
 exit(0)
