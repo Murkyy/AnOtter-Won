@@ -1,1 +1,0 @@
-FRAME_SKIP = 8
