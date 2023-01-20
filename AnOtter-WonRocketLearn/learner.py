@@ -63,14 +63,20 @@ if __name__ == "__main__":
 
     def rew():
         return EventReward(
-                    goal=10.0,
-                    concede=-10.0,
-                    shot=0.5,
-                    save=3.0,
-                    demo=1.0,
-                    boost_pickup=0.01,
-                    touch=0.5
+                    team_goal=1.0,
+                    concede=-1.0,
                 )
+
+
+        # return EventReward(
+        #             goal=10.0,
+        #             concede=-10.0,
+        #             shot=0.5,
+        #             save=3.0,
+        #             demo=1.0,
+        #             boost_pickup=0.01,
+        #             touch=0.5
+        #         )
         # return CombinedRewardNormalized(
         #     (
         #         EventReward(
