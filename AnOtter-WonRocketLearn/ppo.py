@@ -259,11 +259,22 @@ class PPO:
         rewards_tensors = []
 
         ep_rewards = []
+        ep_rewards_no_norm = []
         ep_steps = []
         n = 0
 
+        ema = 0.9
 
-        for buffer in buffers:  # Do discounts for each ExperienceBuffer individually
+        # buffers_1, buffers_2 = tee(buffers, 2)
+        # for i, buffer in enumerate(buffers_1):
+        #     rewards = np.stack(buffer.rewards)
+        #     if i == 0:
+        #         episodic_average = rewards.sum()
+        #     else:
+        #         episodic_average = ema*episodic_average + (1 - ema)*rewards.sum()
+
+
+        for i, buffer in enumerate(buffers):  # Do discounts for each ExperienceBuffer individually
             if isinstance(buffer.observations[0], (tuple, list)):
                 transposed = tuple(zip(*buffer.observations))
                 obs_tensor = tuple(torch.from_numpy(np.vstack(t)).float() for t in transposed)
@@ -310,11 +321,14 @@ class PPO:
             # else:
             #     episodic_average = self._update_ema(episodic_average, rewards, ema)
 
-            # rewards = np.clip(rewards / (np.array(rewards.std()) + np.finfo(float).eps), -clip_rewards, clip_rewards)
-            # rewards = rewards / (np.array(episodic_average) + np.finfo(float).eps)
-            # rewards = np.clip(rewards / (np.array(episodic_average_list).std() + np.finfo(float).eps), -clip_rewards, clip_rewards)
+            ep_rewards_no_norm.append(rewards.sum())
 
-            rewards = np.clip(rewards / (rewards.std() + np.finfo(float).eps), -10, 10)
+            if i == 0:
+                episodic_average = rewards.sum()
+            else:
+                episodic_average = ema*episodic_average + (1 - ema)*rewards.sum()
+
+            rewards = np.clip(rewards / ( episodic_average + np.finfo(float).eps), -10, 10)
 
             advantages = self._calculate_advantages_numba(rewards, values, self.gamma, self.gae_lambda)
 
@@ -330,11 +344,14 @@ class PPO:
             ep_steps.append(size)
             n += 1
         ep_rewards = np.array(ep_rewards)
+        ep_rewards_no_norm = np.array(ep_rewards)
         ep_steps = np.array(ep_steps)
 
         self.logger.log({
             "ppo/ep_reward_mean": ep_rewards.mean(),
             "ppo/ep_reward_std": ep_rewards.std(),
+            "ppo/ep_reward_no_norm_mean": ep_rewards_no_norm.mean(),
+            "ppo/ep_reward_no_norm_std": ep_rewards_no_norm.std(),
             "ppo/ep_len_mean": ep_steps.mean(),
         }, step=iteration, commit=False)
 

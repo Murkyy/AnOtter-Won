@@ -58,10 +58,10 @@ if __name__ == "__main__":
 
     # ROCKET-LEARN USES WANDB WHICH REQUIRES A LOGIN TO USE. YOU CAN SET AN ENVIRONMENTAL VARIABLE
     # OR HARDCODE IT IF YOU ARE NOT SHARING YOUR SOURCE FILES
-    name_and_version = "AnOtterWon_V0.0.0"
+    name_and_version = "AnOtterWon_Vtest"
     wandb.login(key=os.environ["wandb_key"])
     logger = wandb.init(project="AnOtter-Won", entity="murky")
-    logger.name = "LEARNER_ANOTTERWON_V0.0.0"
+    logger.name = "LEARNER_ANOTTERWON_Vtest"
 
     # LINK TO THE REDIS SERVER YOU SHOULD HAVE RUNNING (USE THE SAME PASSWORD YOU SET IN THE REDIS
     # CONFIG)
@@ -72,21 +72,16 @@ if __name__ == "__main__":
         return ExpandAdvancedObs()
 
     def rew():
-        return EventReward(
-            goal=1.0,
-            team_goal=1.0,
-            concede=-1.0,
-        )
 
-        # return EventReward(
-        #             goal=10.0,
-        #             concede=-10.0,
-        #             shot=0.5,
-        #             save=3.0,
-        #             demo=1.0,
-        #             boost_pickup=0.01,
-        #             touch=0.5
-        #         )
+        return EventReward(
+            goal=10.0,
+            concede=-10.0,
+            shot=0.5,
+            save=3.0,
+            demo=1.0,
+            boost_pickup=0.01,
+            touch=0.1,
+        )
         # return CombinedRewardNormalized(
         #     (
         #         EventReward(
@@ -241,8 +236,7 @@ if __name__ == "__main__":
 
     # LOAD A CHECKPOINT THAT WAS PREVIOUSLY SAVED AND CONTINUE TRAINING. OPTIONAL PARAMETER ALLOWS YOU
     # TO RESTART THE STEP COUNT INSTEAD OF CONTINUING
-    # alg.load(f"out/models/{name_and_version}/nomad_1673792054.2704778/nomad_100/checkpoint.pt")
-
+    # alg.load(f"out/models/{name_and_version}/AnOtter-Won_1674253831.9620147/AnOtter-Won_100/checkpoint.pt")
     # BEGIN TRAINING. IT WILL CONTINUE UNTIL MANUALLY STOPPED
     # -iterations_per_save SPECIFIES HOW OFTEN CHECKPOINTS ARE SAVED
     # -save_dir SPECIFIES WHERE
