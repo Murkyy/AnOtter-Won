@@ -66,9 +66,13 @@ if __name__ == "__main__":
         # 2v2  | 1.07 | 2.8 | 4.3
         # 3v3  | 0.83 | 3.6 | 5.6
         reward_function=EventReward(
-            goal=1.0,
-            team_goal=1.0,
-            concede=-1.0,
+            goal=10.0,
+            concede=-10.0,
+            shot=0.5,
+            save=3.0,
+            demo=1.0,
+            boost_pickup=0.01,
+            touch=0.1,
         )
         # reward_function=CombinedRewardNormalized(
         #     (
