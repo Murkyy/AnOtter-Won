@@ -135,3 +135,4 @@ NoMadRLBotSB3Interface/exit_save.zip
 NoMadRocketLearnRLBotInterface/jit_policy.jit
 AnOtter-Won_Rocket-LearnRLBotInterface/jit.pt
 AnOtter-Won_Rocket-LearnRLBotInterface/tools/checkpoint.pt
+AnOtter-WonRocketLearn/run_worker.ps1
