@@ -94,6 +94,7 @@ class PPO:
         self.running_rew_count = 1e-4
         self.returns = 0
         self.clip_reward = 10
+        self.episodic_average = None
 
         self.total_steps = 0
         self.logger = logger
@@ -263,6 +264,7 @@ class PPO:
         ep_steps = []
         n = 0
 
+        
         ema = 0.9
 
         # buffers_1, buffers_2 = tee(buffers, 2)
@@ -274,7 +276,7 @@ class PPO:
         #         episodic_average = ema*episodic_average + (1 - ema)*rewards.sum()
 
 
-        for i, buffer in enumerate(buffers):  # Do discounts for each ExperienceBuffer individually
+        for buffer in buffers:  # Do discounts for each ExperienceBuffer individually
             if isinstance(buffer.observations[0], (tuple, list)):
                 transposed = tuple(zip(*buffer.observations))
                 obs_tensor = tuple(torch.from_numpy(np.vstack(t)).float() for t in transposed)
@@ -323,12 +325,12 @@ class PPO:
 
             ep_rewards_no_norm.append(rewards.sum())
 
-            if i == 0:
-                episodic_average = rewards.sum()
-            else:
-                episodic_average = ema*episodic_average + (1 - ema)*rewards.sum()
+            # if self.episodic_average == None:
+            #     self.episodic_average = rewards.sum()
+            # else:
+            #     self.episodic_average = ema*self.episodic_average + (1 - ema)*rewards.sum()
 
-            rewards = np.clip(rewards / ( episodic_average + np.finfo(float).eps), -10, 10)
+            # rewards = np.clip(rewards / ( rewards.sum()/ (self.episodic_average + np.finfo(float).eps) + np.finfo(float).eps), -10, 10)
 
             advantages = self._calculate_advantages_numba(rewards, values, self.gamma, self.gae_lambda)
 
@@ -344,7 +346,7 @@ class PPO:
             ep_steps.append(size)
             n += 1
         ep_rewards = np.array(ep_rewards)
-        ep_rewards_no_norm = np.array(ep_rewards)
+        ep_rewards_no_norm = np.array(ep_rewards_no_norm)
         ep_steps = np.array(ep_steps)
 
         self.logger.log({
