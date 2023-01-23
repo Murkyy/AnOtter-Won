@@ -73,30 +73,30 @@ if __name__ == "__main__":
 
     def rew():
 
-        # return EventReward(
-        #     team_goal=10.0,
-        #     concede=-10.0,
-        #     shot=0.5,
-        #     save=3.0,
-        #     demo=1.0,
-        #     boost_pickup=0.01,
-        #     touch=0.5,
-        # )
-        return CombinedRewardNormalized(
-            (
-                EventReward(
-                    team_goal=10.0,
-                    concede=-10.0,
-                    shot=0.5,
-                    save=3.0,
-                    demo=1.0,
-                    boost_pickup=0.01,
-                    touch=0.5,
-                ),
-                KickoffReward(kickoff_w=1),
-            ),
-            (1, 1),
+        return EventReward(
+            team_goal=10.0,
+            concede=-10.0,
+            shot=0.5,
+            save=3.0,
+            demo=1.0,
+            boost_pickup=0.01,
+            touch=0.5,
         )
+        # return CombinedRewardNormalized(
+        #     (
+        #         EventReward(
+        #             team_goal=10.0,
+        #             concede=-10.0,
+        #             shot=0.5,
+        #             save=3.0,
+        #             demo=1.0,
+        #             boost_pickup=0.01,
+        #             touch=0.5,
+        #         ),
+        #         KickoffReward(kickoff_w=1),
+        #     ),
+        #     (1, 1),
+        # )
 
     def act():
         return LookupAction()
@@ -128,7 +128,7 @@ if __name__ == "__main__":
 
     state_dim = 169  # 107 for 1s, 169 for 2s, 231 for 3s for Advanced Obs
 
-    hidden_dim = 256
+    hidden_dim = 512
 
     critic = Sequential(
         Linear(state_dim, hidden_dim),
@@ -198,7 +198,7 @@ if __name__ == "__main__":
         ent_coef=0.01,
         n_steps=400_000,
         batch_size=400_000,
-        minibatch_size=100_000,
+        minibatch_size=50_000,
         epochs=20,
         gamma=gamma,
         clip_range=0.2,
