@@ -73,31 +73,30 @@ if __name__ == "__main__":
 
     def rew():
 
-        return EventReward(
-            team_goal=10.0,
-            concede=-10.0,
-            shot=0.5,
-            save=3.0,
-            demo=1.0,
-            boost_pickup=0.01,
-            touch=0.5,
-        )
-        # return CombinedRewardNormalized(
-        #     (
-        #         EventReward(
-        #             goal=1.0,
-        #             concede=-1.0,
-        #             shot=0.05,
-        #             save=0.3,
-        #             demo=0.1,
-        #             boost_pickup=0.001,
-        #             touch=0.05
-        #         ),
-        #         KickoffReward(kickoff_w=1),
-        #         PossessionReward(possession_w=1)
-        #     ),
-        #     (2, 0.02, 0.02),
+        # return EventReward(
+        #     team_goal=10.0,
+        #     concede=-10.0,
+        #     shot=0.5,
+        #     save=3.0,
+        #     demo=1.0,
+        #     boost_pickup=0.01,
+        #     touch=0.5,
         # )
+        return CombinedRewardNormalized(
+            (
+                EventReward(
+                    team_goal=10.0,
+                    concede=-10.0,
+                    shot=0.5,
+                    save=3.0,
+                    demo=1.0,
+                    boost_pickup=0.01,
+                    touch=0.5,
+                ),
+                KickoffReward(kickoff_w=1),
+            ),
+            (1, 1),
+        )
 
     def act():
         return LookupAction()
