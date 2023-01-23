@@ -72,7 +72,7 @@ if __name__ == "__main__":
             save=3.0,
             demo=1.0,
             boost_pickup=0.01,
-            touch=0.1,
+            touch=0.5,
         )
         # reward_function=CombinedRewardNormalized(
         #     (

@@ -105,7 +105,8 @@ class PPO:
     def update_reward_norm(self, rewards: np.ndarray) -> None:
         batch_mean = np.mean(rewards)
         batch_var = np.var(rewards)
-        batch_count = rewards.shape[0]
+        batch_count = 1
+        # batch_count = rewards.shape[0]
 
         delta = batch_mean - self.running_rew_mean
         tot_count = self.running_rew_count + batch_count
@@ -266,10 +267,11 @@ class PPO:
 
         
         ema = 0.9
-
+        stock_rewards = []
         # buffers_1, buffers_2 = tee(buffers, 2)
         # for i, buffer in enumerate(buffers_1):
-        #     rewards = np.stack(buffer.rewards)
+        #     stock_rewards = np.append(stock_rewards,np.stack(buffer.rewards))
+        # stock_std = stock_rewards.std()
         #     if i == 0:
         #         episodic_average = rewards.sum()
         #     else:
@@ -313,9 +315,7 @@ class PPO:
             episode_starts[0] = 1.
 
 
-            # for i, reward in enumerate(rewards):
-            #     self._update_reward(reward)
-            #     rewards[i] = self.normalize_reward(reward)
+            
 
             # if first_buffer:
             #     first_buffer = False
@@ -330,7 +330,11 @@ class PPO:
             # else:
             #     self.episodic_average = ema*self.episodic_average + (1 - ema)*rewards.sum()
 
-            # rewards = np.clip(rewards / ( rewards.sum()/ (self.episodic_average + np.finfo(float).eps) + np.finfo(float).eps), -10, 10)
+            # rewards = np.clip(rewards / ( rewards.sum()/ (self.episodic_average + np.finfo(float).eps) + np.finfo(float).eps), -self.clip_reward, self.clip_reward)
+            # rewards = rewards / (stock_std + np.finfo(float).eps)
+            # for i, reward in enumerate(rewards):
+            #     self._update_reward(reward)
+            #     rewards[i] = self.normalize_reward(reward)
 
             advantages = self._calculate_advantages_numba(rewards, values, self.gamma, self.gae_lambda)
 

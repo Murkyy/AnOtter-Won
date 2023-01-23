@@ -58,10 +58,10 @@ if __name__ == "__main__":
 
     # ROCKET-LEARN USES WANDB WHICH REQUIRES A LOGIN TO USE. YOU CAN SET AN ENVIRONMENTAL VARIABLE
     # OR HARDCODE IT IF YOU ARE NOT SHARING YOUR SOURCE FILES
-    name_and_version = "AnOtterWon_Vnonorm"
+    name_and_version = "AnOtterWon_V0.0.2"
     wandb.login(key=os.environ["wandb_key"])
     logger = wandb.init(project="AnOtter-Won", entity="murky")
-    logger.name = "LEARNER_ANOTTERWON_Vnonorm"
+    logger.name = "LEARNER_ANOTTERWON_V0.0.2"
 
     # LINK TO THE REDIS SERVER YOU SHOULD HAVE RUNNING (USE THE SAME PASSWORD YOU SET IN THE REDIS
     # CONFIG)
@@ -80,7 +80,7 @@ if __name__ == "__main__":
             save=3.0,
             demo=1.0,
             boost_pickup=0.01,
-            touch=0.1,
+            touch=0.5,
         )
         # return CombinedRewardNormalized(
         #     (
