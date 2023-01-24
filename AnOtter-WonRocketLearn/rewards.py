@@ -115,7 +115,7 @@ class CombinedRewardNormalized(RewardFunction):
         #             float(np.dot(self.reward_weights, rewards) / sum(self.reward_weights)),
         #         )
 
-        return float(np.dot(self.reward_weights, rewards) / sum(self.reward_weights))
+        return float(np.dot(self.reward_weights, rewards)) #/ sum(self.reward_weights))
 
     def get_final_reward(
         self, player: PlayerData, state: GameState, previous_action: np.ndarray
@@ -134,7 +134,7 @@ class CombinedRewardNormalized(RewardFunction):
             for func in self.reward_functions
         ]
 
-        return float(np.dot(self.reward_weights, rewards) / sum(self.reward_weights))
+        return float(np.dot(self.reward_weights, rewards)) #/ sum(self.reward_weights))
 
 
 class EventReward(RewardFunction):

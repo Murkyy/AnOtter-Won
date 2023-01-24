@@ -20,6 +20,7 @@ from rewards import (
     CombinedRewardNormalized,
     TouchGrassReward,
     PossessionReward,
+    VelocityBallToGoalReward,
 )
 from rlgym.utils.action_parsers.discrete_act import DiscreteAction
 from anotterwon_lookup_act import LookupAction
@@ -58,10 +59,10 @@ if __name__ == "__main__":
 
     # ROCKET-LEARN USES WANDB WHICH REQUIRES A LOGIN TO USE. YOU CAN SET AN ENVIRONMENTAL VARIABLE
     # OR HARDCODE IT IF YOU ARE NOT SHARING YOUR SOURCE FILES
-    name_and_version = "AnOtterWon_V0.0.2"
+    name_and_version = "AnOtterWon_V0.0.3"
     wandb.login(key=os.environ["wandb_key"])
     logger = wandb.init(project="AnOtter-Won", entity="murky")
-    logger.name = "LEARNER_ANOTTERWON_V0.0.2"
+    logger.name = "LEARNER_ANOTTERWON_V0.0.3"
 
     # LINK TO THE REDIS SERVER YOU SHOULD HAVE RUNNING (USE THE SAME PASSWORD YOU SET IN THE REDIS
     # CONFIG)
@@ -72,31 +73,20 @@ if __name__ == "__main__":
         return ExpandAdvancedObs()
 
     def rew():
-
-        return EventReward(
-            team_goal=10.0,
-            concede=-10.0,
-            shot=0.5,
-            save=3.0,
-            demo=1.0,
-            boost_pickup=0.01,
-            touch=0.5,
+        return CombinedRewardNormalized(
+            (
+                VelocityBallToGoalReward(),
+                EventReward(
+                    goal=100.0,
+                    concede=-100.0,
+                    shot=5.0,
+                    save=30.0,
+                    demo=10.0,
+                    boost_pickup=0.1,
+                ),
+            ),
+            (0.1, 1),
         )
-        # return CombinedRewardNormalized(
-        #     (
-        #         EventReward(
-        #             team_goal=10.0,
-        #             concede=-10.0,
-        #             shot=0.5,
-        #             save=3.0,
-        #             demo=1.0,
-        #             boost_pickup=0.01,
-        #             touch=0.5,
-        #         ),
-        #         KickoffReward(kickoff_w=1),
-        #     ),
-        #     (1, 1),
-        # )
 
     def act():
         return LookupAction()
@@ -196,8 +186,8 @@ if __name__ == "__main__":
         rollout_gen,
         agent,
         ent_coef=0.01,
-        n_steps=400_000,
-        batch_size=400_000,
+        n_steps=1_000_000,
+        batch_size=1_000_000,
         minibatch_size=50_000,
         epochs=20,
         gamma=gamma,
