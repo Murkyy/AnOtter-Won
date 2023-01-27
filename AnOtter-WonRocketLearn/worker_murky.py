@@ -9,6 +9,7 @@ from rlgym.utils.gamestates import PlayerData, GameState
 from rlgym.utils.terminal_conditions.common_conditions import (
     GoalScoredCondition,
     TimeoutCondition,
+    NoTouchTimeoutCondition,
 )
 from rewards import (
     EventReward,
@@ -51,6 +52,8 @@ if __name__ == "__main__":
 
     torch.set_num_threads(1)
 
+    frame_skip = 8
+    fps = 120 / frame_skip
     # BUILD THE ROCKET LEAGUE MATCH THAT WILL USED FOR TRAINING
     # -ENSURE OBSERVATION, REWARD, AND ACTION CHOICES ARE THE SAME IN THE WORKER
     match = Match(
@@ -60,25 +63,23 @@ if __name__ == "__main__":
         state_setter=DefaultState(),
         obs_builder=ExpandAdvancedObs(),
         action_parser=LookupAction(),
-        terminal_conditions=[TimeoutCondition(round(4096)), GoalScoredCondition()],
+        terminal_conditions=[
+            TimeoutCondition(round(4096)),
+            NoTouchTimeoutCondition(fps * 45),
+            GoalScoredCondition(),
+        ],
         # mode | gpm  | 95% | 99%
         # -----|------|-----|-----
         # 1v1  | 1.69 | 1.8 | 2.8
         # 2v2  | 1.07 | 2.8 | 4.3
         # 3v3  | 0.83 | 3.6 | 5.6
-        reward_function=CombinedRewardNormalized(
-            (
-                VelocityBallToGoalReward(),
-                EventReward(
-                    goal=100.0,
-                    concede=-100.0,
-                    shot=5.0,
-                    save=30.0,
-                    demo=10.0,
-                    boost_pickup=0.1,
-                ),
-            ),
-            (0.1, 1),
+        reward_function=EventReward(
+            team_goal=10.0,
+            concede=-10.0,
+            shot=0.5,
+            save=3.0,
+            demo=1.0,
+            boost_pickup=0.01,
         ),
     )
 

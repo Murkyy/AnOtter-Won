@@ -38,7 +38,11 @@ from rlgym_tools.extra_rewards.jump_touch_reward import JumpTouchReward
 from rlgym_tools.extra_rewards.teamspacingreward import TeamSpacingReward
 from rlgym_tools.extra_rewards.touchgrassreward import TouchGrassReward
 from rlgym_tools.sb3_utils import SB3MultipleInstanceEnv
-from rlgym_tools.sb3_utils.sb3_log_reward import SB3CombinedLogReward, SB3CombinedLogRewardCallback
+from rlgym_tools.sb3_utils.sb3_log_reward import (
+    SB3CombinedLogReward,
+    SB3CombinedLogRewardCallback,
+    SB3LogReward,
+)
 from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import CheckpointCallback
 from stable_baselines3.common.vec_env import VecCheckNan, VecMonitor, VecNormalize
@@ -52,15 +56,14 @@ if __name__ == "__main__":  # Required for multiprocessing
     horizon = 1_000_000
     wait_time = 20
     device = "cuda"
-    savepath = "out/models/NoMad_Vbase/"
-    logpath = "out/logs/NoMad_Vbase/"
+    savepath = "out/models/NoMad_Vbase8/"
+    logpath = "out/logs/NoMad_Vbase8/"
     fps = 120 / frame_skip
     gamma = np.exp(np.log(0.5) / (fps * half_life_seconds))  # Quick mafs
     print(f"fps={fps}, gamma={gamma})")
     agents_per_match = 4
-    num_instances = 12
+    num_instances = 8
     game_speed = 100
-
 
     def shift_bit_length(x):
         return 1 << (x - 1).bit_length()
@@ -70,7 +73,7 @@ if __name__ == "__main__":  # Required for multiprocessing
         target_steps // (num_instances * agents_per_match)
     )  # making sure the experience counts line up properly
     batch_size = shift_bit_length(
-        target_steps // 8
+        target_steps // 4
     )  # getting the batch size down to something more manageable - 100k in this case # noqa: E501
     training_interval = 50_000_000
     mmr_save_frequency = 100_000_000
@@ -88,45 +91,30 @@ if __name__ == "__main__":  # Required for multiprocessing
             tick_skip=frame_skip,
             # SB3CombinedLogReward(CombinedReward
             # DistributeRewards(
-            reward_function=SB3CombinedLogReward( #use no bumb reward and modify kickoff to single agent
+            reward_function=SB3CombinedLogReward(  # use no bumb reward and modify kickoff to single agent
                 (
-                    # LiuDistancePlayerToBallReward(),
-                    # FaceBallReward(),
-                    # TouchBallReward(aerial_weight=0.1),
-                    # VelocityReward(),
-                    # VelocityPlayerToBallReward(),
-                    # SaveBoostReward(),
-                    VelocityBallToGoalReward(),
                     EventReward(
-                        goal=100.0,
-                        concede=-100.0,
-                        shot=5.0,
-                        save=30.0,
-                        demo=10.0,
-                        boost_pickup=0.1,
+                        team_goal=10.0,
+                        concede=-10.0,
+                        shot=0.5,
+                        save=3.0,
+                        demo=1.0,
+                        boost_pickup=0.01,
                     ),
-                    # RewardIfTouchedLast(),
-                    # RewardIfBehindBall(),
-                    # KickoffReward(),
-                    # JumpTouchReward(),
-                    # TeamSpacingReward(),
-                    # TouchGrassReward(),
                 ),
-                (0.1, 1),
+                (1.0,),
             ),
-            # team_spirit=0.6,
-            # ),
             # self_play=True,
             spawn_opponents=True,
             terminal_conditions=[
-                TimeoutCondition(fps * 300),
+                TimeoutCondition(round(4096)),
                 NoTouchTimeoutCondition(fps * 45),
                 GoalScoredCondition(),
             ],
             # obs_builder = GeneralStacker(
             #     AdvancedObs(), stack_size=int(fps)
             # ),  # 1 sec stacking
-            obs_builder = AdvancedObs(),
+            obs_builder=AdvancedObs(),
             state_setter=DefaultState(),  # Resets to kickoff position
             action_parser=LookupAction(),  # Discrete > Continuous don't @ me
         )
@@ -139,14 +127,13 @@ if __name__ == "__main__":  # Required for multiprocessing
         env
     )  # Recommended, logs mean reward and ep_len to Tensorboard # noqa: E501
     env = VecNormalize(
-        env, norm_obs=False, norm_reward=True, gamma=gamma
+        env, norm_obs=False, norm_reward=False, gamma=gamma
     )  # Highly recommended, normalizes rewards
 
     try:
-        
+
         model = PPO.load(
             savepath + "exit_save.zip",
-            
             # savepath + "rl_model_225741420_steps.zip",
             env,
             custom_objects=dict(
@@ -166,8 +153,7 @@ if __name__ == "__main__":  # Required for multiprocessing
         policy_kwargs = dict(
             activation_fn=ReLU,
             net_arch=[
-                512,
-                dict(pi=[512, 512], vf=[512, 512]),
+                dict(pi=[256, 256], vf=[256, 256]),
             ],
             # net_arch=[
             #     1024,
@@ -201,17 +187,16 @@ if __name__ == "__main__":  # Required for multiprocessing
     for k, v in params["policy"].items():
         print(k, list(v.size()))
 
-    
     # Save model every so often
     # Divide by num_envs (number of agents) because callback only increments every time all agents have taken a step # noqa: E501
     # This saves to specified folder with a specified name
-    callback = [CheckpointCallback(
-        round(5_000_000 / env.num_envs),
-        save_path=savepath,
-        name_prefix="rl_model",  # noqa: E501
-    ),
-    SB3CombinedLogRewardCallback(("VelocityBallToGoalReward",
-                    "EventReward"))
+    callback = [
+        CheckpointCallback(
+            round(1_000_000 / env.num_envs),
+            save_path=savepath,
+            name_prefix="rl_model",  # noqa: E501
+        ),
+        SB3CombinedLogRewardCallback(("EventReward",)),
     ]
     model.num_timesteps = 0
     try:
