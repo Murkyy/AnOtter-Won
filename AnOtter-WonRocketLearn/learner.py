@@ -13,7 +13,9 @@ from redis import Redis
 
 from rlgym.utils.obs_builders.advanced_obs import AdvancedObs
 from rlgym.utils.gamestates import PlayerData, GameState
-from rlgym.utils.reward_functions.default_reward import DefaultReward
+
+from rlgym.utils.reward_functions.common_rewards.player_ball_rewards import VelocityPlayerToBallReward
+from rlgym_tools.extra_rewards.jump_touch_reward import JumpTouchReward
 from rewards import (
     EventReward,
     KickoffReward,
@@ -49,6 +51,10 @@ class ExpandAdvancedObs(AdvancedObs):
         return np.expand_dims(obs, 0)
 
 
+def shift_bit_length(x):
+    return 1 << (x - 1).bit_length()
+
+
 if __name__ == "__main__":
     """
 
@@ -59,10 +65,10 @@ if __name__ == "__main__":
 
     # ROCKET-LEARN USES WANDB WHICH REQUIRES A LOGIN TO USE. YOU CAN SET AN ENVIRONMENTAL VARIABLE
     # OR HARDCODE IT IF YOU ARE NOT SHARING YOUR SOURCE FILES
-    name_and_version = "AnOtterWon_Vbase"
+    name_and_version = "AnOtterWon_Vbase2"
     wandb.login(key=os.environ["wandb_key"])
     logger = wandb.init(project="AnOtter-Won", entity="murky")
-    logger.name = "LEARNER_ANOTTERWON_Vbase"
+    logger.name = "LEARNER_ANOTTERWON_Vbase2"
 
     # LINK TO THE REDIS SERVER YOU SHOULD HAVE RUNNING (USE THE SAME PASSWORD YOU SET IN THE REDIS
     # CONFIG)
@@ -73,13 +79,28 @@ if __name__ == "__main__":
         return ExpandAdvancedObs()
 
     def rew():
-        return EventReward(
-            team_goal=10.0,
-            concede=-10.0,
-            shot=0.5,
-            save=3.0,
-            demo=1.0,
-            boost_pickup=0.01,
+        return CombinedRewardNormalized(
+            (
+                EventReward(
+                    team_goal=10.0,
+                    concede=-10.0,
+                    shot=0.5,
+                    save=3.0,
+                    demo=1.0,
+                    boost_pickup=0.01,
+                ),
+                KickoffReward(kickoff_w=1.0),
+                VelocityBallToGoalReward(),
+                JumpTouchReward(),
+                VelocityPlayerToBallReward(),
+            ),
+            (
+                1,
+                0.1,
+                0.1,
+                1,
+                0.01
+            ),
         )
 
     def act():
@@ -170,19 +191,31 @@ if __name__ == "__main__":
     #     print(name)
     #     print(parameter.data)
 
+    n_steps = shift_bit_length(1_000_000)
+    batch_size = n_steps
+    minibatch_size = shift_bit_length(100_000)
     tick_skip = 8
     fps = 120 / tick_skip
     half_life_seconds = 10
     gamma = np.exp(np.log(0.5) / (fps * half_life_seconds))
-    print("gamma =", gamma)
+    print(
+        "gamma =",
+        gamma,
+        "n_steps =",
+        n_steps,
+        "batch_size =",
+        batch_size,
+        "minibatch_size =",
+        minibatch_size,
+    )
     # INSTANTIATE THE PPO TRAINING ALGORITHM
     alg = PPO(
         rollout_gen,
         agent,
         ent_coef=0.01,
-        n_steps=1_000_000,
-        batch_size=200_000,
-        minibatch_size=50_000,
+        n_steps=n_steps,
+        batch_size=batch_size,
+        minibatch_size=minibatch_size,
         epochs=20,
         gamma=gamma,
         clip_range=0.2,

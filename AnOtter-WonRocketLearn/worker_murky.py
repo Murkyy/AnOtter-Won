@@ -11,6 +11,11 @@ from rlgym.utils.terminal_conditions.common_conditions import (
     TimeoutCondition,
     NoTouchTimeoutCondition,
 )
+
+from rlgym.utils.reward_functions.common_rewards.player_ball_rewards import (
+    VelocityPlayerToBallReward,
+)
+from rlgym_tools.extra_rewards.jump_touch_reward import JumpTouchReward
 from rewards import (
     EventReward,
     KickoffReward,
@@ -73,13 +78,22 @@ if __name__ == "__main__":
         # 1v1  | 1.69 | 1.8 | 2.8
         # 2v2  | 1.07 | 2.8 | 4.3
         # 3v3  | 0.83 | 3.6 | 5.6
-        reward_function=EventReward(
-            team_goal=10.0,
-            concede=-10.0,
-            shot=0.5,
-            save=3.0,
-            demo=1.0,
-            boost_pickup=0.01,
+        reward_function=CombinedRewardNormalized(
+            (
+                EventReward(
+                    team_goal=10.0,
+                    concede=-10.0,
+                    shot=0.5,
+                    save=3.0,
+                    demo=1.0,
+                    boost_pickup=0.01,
+                ),
+                KickoffReward(kickoff_w=1.0),
+                VelocityBallToGoalReward(),
+                JumpTouchReward(),
+                VelocityPlayerToBallReward(),
+            ),
+            (1, 0.1, 0.1, 1, 0.01),
         ),
     )
 
