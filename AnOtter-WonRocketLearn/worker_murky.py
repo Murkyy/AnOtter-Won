@@ -93,7 +93,7 @@ if __name__ == "__main__":
                 JumpTouchReward(),
                 VelocityPlayerToBallReward(),
             ),
-            (1, 0.1, 0.1, 1, 0.01),
+            (1, 0.1, 0.1, 0.1, 0.01),
         ),
     )
 
