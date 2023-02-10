@@ -85,14 +85,15 @@ if __name__ == "__main__":
                     shot=0.5,
                     save=3.0,
                     demo=1.0,
-                    boost_pickup=0.01,
+                    boost_pickup=0.1,
                 ),
                 KickoffReward(kickoff_w=1.0),
                 VelocityBallToGoalReward(),
                 JumpTouchReward(),
                 VelocityPlayerToBallReward(),
+                PossessionReward()
             ),
-            (1, 0.1, 0.1, 0.1, 0.01),
+            (1, 0.1, 0.1, 0.01, 0.001, 0.1),
         ),
     )
 

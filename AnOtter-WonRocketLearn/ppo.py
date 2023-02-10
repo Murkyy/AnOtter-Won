@@ -266,16 +266,17 @@ class PPO:
         n = 0
 
         
-        ema = 0.9
-        stock_rewards = []
+        # ema = 0.9
+        # stock_rewards = []
         # buffers_1, buffers_2 = tee(buffers, 2)
-        # for i, buffer in enumerate(buffers_1):
+        # for buffer in buffers_1:
         #     stock_rewards = np.append(stock_rewards,np.stack(buffer.rewards))
-        # stock_std = stock_rewards.std()
-        #     if i == 0:
-        #         episodic_average = rewards.sum()
-        #     else:
-        #         episodic_average = ema*episodic_average + (1 - ema)*rewards.sum()
+        # srs = stock_rewards.sum()
+        # if self.episodic_average == None:
+        #     self.episodic_average = srs
+        # else:
+        #     episodic_average = ema*episodic_average + (1 - ema)*srs
+        # norm_factor = self.episodic_average/(srs + np.finfo(float).eps)
 
 
         for buffer in buffers:  # Do discounts for each ExperienceBuffer individually
@@ -329,6 +330,8 @@ class PPO:
             #     self.episodic_average = rewards.sum()
             # else:
             #     self.episodic_average = ema*self.episodic_average + (1 - ema)*rewards.sum()
+
+            # rewards = rewards / norm_factor
 
             # rewards = np.clip(rewards / ( rewards.sum()/ (self.episodic_average + np.finfo(float).eps) + np.finfo(float).eps), -self.clip_reward, self.clip_reward)
             # rewards = rewards / (stock_std + np.finfo(float).eps)

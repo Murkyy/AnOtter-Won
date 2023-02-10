@@ -14,7 +14,9 @@ from redis import Redis
 from rlgym.utils.obs_builders.advanced_obs import AdvancedObs
 from rlgym.utils.gamestates import PlayerData, GameState
 
-from rlgym.utils.reward_functions.common_rewards.player_ball_rewards import VelocityPlayerToBallReward
+from rlgym.utils.reward_functions.common_rewards.player_ball_rewards import (
+    VelocityPlayerToBallReward,
+)
 from rlgym_tools.extra_rewards.jump_touch_reward import JumpTouchReward
 from rewards import (
     EventReward,
@@ -65,10 +67,10 @@ if __name__ == "__main__":
 
     # ROCKET-LEARN USES WANDB WHICH REQUIRES A LOGIN TO USE. YOU CAN SET AN ENVIRONMENTAL VARIABLE
     # OR HARDCODE IT IF YOU ARE NOT SHARING YOUR SOURCE FILES
-    name_and_version = "AnOtterWon_V0.1.0"
+    name_and_version = "AnOtterWon_V0.1.2"
     wandb.login(key=os.environ["wandb_key"])
     logger = wandb.init(project="AnOtter-Won", entity="murky")
-    logger.name = "LEARNER_ANOTTERWON_V0.1.0"
+    logger.name = "LEARNER_ANOTTERWON_V0.1.2"
 
     # LINK TO THE REDIS SERVER YOU SHOULD HAVE RUNNING (USE THE SAME PASSWORD YOU SET IN THE REDIS
     # CONFIG)
@@ -87,20 +89,15 @@ if __name__ == "__main__":
                     shot=0.5,
                     save=3.0,
                     demo=1.0,
-                    boost_pickup=0.01,
+                    boost_pickup=0.1,
                 ),
                 KickoffReward(kickoff_w=1.0),
                 VelocityBallToGoalReward(),
                 JumpTouchReward(),
                 VelocityPlayerToBallReward(),
+                PossessionReward()
             ),
-            (
-                1,
-                0.1,
-                0.1,
-                0.1,
-                0.01
-            ),
+            (1, 0.1, 0.1, 0.01, 0.001, 0.1),
         )
 
     def act():
@@ -120,7 +117,7 @@ if __name__ == "__main__":
         logger=logger,
         save_every=100,
         model_every=100,
-        clear=False,
+        clear=True,
     )
 
     # ROCKET-LEARN EXPECTS A SET OF DISTRIBUTIONS FOR EACH ACTION FROM THE NETWORK, NOT
@@ -252,12 +249,12 @@ if __name__ == "__main__":
 
     # LOAD A CHECKPOINT THAT WAS PREVIOUSLY SAVED AND CONTINUE TRAINING. OPTIONAL PARAMETER ALLOWS YOU
     # TO RESTART THE STEP COUNT INSTEAD OF CONTINUING
-    alg.load(f"out/models/{name_and_version}/AnOtter-Won_latest/AnOtter-Won_698/checkpoint.pt")
+    # alg.load(f"out/models/{name_and_version}/AnOtter-Won_1675163807.1579702/AnOtter-Won_1600/checkpoint.pt")
     # BEGIN TRAINING. IT WILL CONTINUE UNTIL MANUALLY STOPPED
     # -iterations_per_save SPECIFIES HOW OFTEN CHECKPOINTS ARE SAVED
     # -save_dir SPECIFIES WHERE
     alg.run(
         iterations_per_save=100,
         save_dir=f"out/models/{name_and_version}",
-        save_jit=True,
+        save_jit=False,
     )
